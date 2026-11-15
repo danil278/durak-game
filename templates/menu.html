@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Durak Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #121213;
+    --surface:     #1a1a1b;
+    --card:        #1e1e1f;
+    --card-hover:  #242425;
+    --border:      #2a2a2c;
+    --amber:       #ffc107;
+    --amber-dim:   #ffc10722;
+    --amber-glow:  #ffc10740;
+    --emerald:     #2ecc71;
+    --emerald-dim: #2ecc7118;
+    --emerald-glow:#2ecc7140;
+    --red:         #e74c3c;
+    --text:        #f0f0f0;
+    --text-muted:  #888;
+    --text-faint:  #444;
+    --radius:      12px;
+    --radius-lg:   18px;
+    --radius-pill: 999px;
+    --shadow:      0 4px 24px #00000060;
+    --shadow-sm:   0 2px 8px #00000040;
+    --transition:  .2s cubic-bezier(.4,0,.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+  }
+
+  /* ── WRAPPER ── */
+  .phone {
+    width: 100%;
+    max-width: 390px;
+    min-height: 100dvh;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 0%, #ffc10708 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 10% 80%, #2ecc7108 0%, transparent 60%),
+      var(--bg);
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 0 32px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(30px);
+    transition: opacity .28s ease, transform .28s cubic-bezier(.4,0,.2,1);
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .screen.slide-left { transform: translateX(-30px); }
+
+  /* ── HEADER ── */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 52px 20px 24px; gap: 12px; }
+  .profile { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 0; }
+  .avatar-wrap {
+    position: relative; width: 46px; height: 46px; border-radius: 50%; padding: 2px;
+    background: conic-gradient(from 0deg, var(--amber), #ff9800, var(--amber), #f57c00, var(--amber));
+    box-shadow: 0 0 14px var(--amber-glow); flex-shrink: 0;
+  }
+  .avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background: var(--card); }
+  .avatar-placeholder {
+    width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #2a2a2c, #333);
+    display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--amber); letter-spacing: -.5px;
+  }
+  .online-dot {
+    position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--emerald); border: 2px solid var(--bg); box-shadow: 0 0 6px var(--emerald-glow);
+  }
+  .profile-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .profile-label { font-size: 10px; font-weight: 500; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
+  .profile-name  { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .resources { display: flex; gap: 8px; flex-shrink: 0; }
+  .pill {
+    display: flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-pill); padding: 5px 5px 5px 9px; box-shadow: var(--shadow-sm);
+  }
+  .pill-icon { font-size: 14px; line-height: 1; }
+  .pill-val  { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
+  .pill-add  {
+    width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; font-size: 14px; font-weight: 700; line-height: 1; transition: var(--transition); flex-shrink: 0;
+  }
+  .pill-add:active { transform: scale(.88); }
+  .pill-gold .pill-icon { color: var(--amber); } .pill-gold .pill-add  { background: var(--amber); color: #000; }
+  .pill-cash .pill-icon { color: var(--emerald); } .pill-cash .pill-add  { background: var(--emerald); color: #000; }
+
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: .12em; text-transform: uppercase; padding: 0 20px; margin-bottom: 10px; }
+
+  /* ── BUTTONS & TILES ── */
+  .quick-game-wrap { padding: 0 20px 20px; }
+  .quick-game {
+    width: 100%; height: 72px; border: none; border-radius: var(--radius-lg);
+    background: linear-gradient(110deg, #e6ac00 0%, #ffc107 45%, #ffcd38 70%, #ffa000 100%);
+    display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; position: relative;
+    overflow: hidden; box-shadow: 0 0 0 1px #ffffff18 inset, 0 8px 32px #ffc10748, 0 2px 8px #00000060; transition: var(--transition);
+  }
+  .quick-game::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #ffffff28 0%, transparent 60%); pointer-events: none; }
+  .quick-game:active { transform: scale(.97); box-shadow: 0 4px 16px #ffc10748; }
+  .qg-icon {
+    width: 38px; height: 38px; background: #00000025; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 2px 8px #00000030;
+  }
+  .qg-text { display: flex; flex-direction: column; align-items: flex-start; }
+  .qg-title  { font-size: 17px; font-weight: 800; color: #111; letter-spacing: -.4px; }
+  .qg-sub    { font-size: 11px; font-weight: 500; color: #00000070; letter-spacing: .01em; margin-top: 1px; }
+  .qg-arrow  { margin-left: auto; font-size: 20px; color: #00000060; padding-right: 4px; }
+
+  .grid-wrap { padding: 0 20px; }
+  .grid-2x2  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tile {
+    aspect-ratio: 1; border-radius: var(--radius-lg); background: var(--card); border: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+    position: relative; overflow: hidden; transition: var(--transition); box-shadow: var(--shadow-sm);
+  }
+  .tile:active { transform: scale(.95); background: var(--card-hover); }
+  .tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, #ffffff06 0%, transparent 60%); pointer-events: none; }
+  .tile-create { border-color: var(--amber-glow); box-shadow: 0 0 0 1px #ffc10728 inset, 0 0 24px #ffc10720, var(--shadow-sm); }
+  .tile-create .tile-icon { color: var(--amber); }
+  .tile-icon { font-size: 34px; line-height: 1; filter: drop-shadow(0 2px 6px #00000060); }
+  .tile-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: .03em; text-align: center; padding: 0 8px; }
+  .tile-create .tile-label { color: var(--amber); }
+  .tile-badge {
+    position: absolute; top: 10px; right: 10px; background: var(--amber); color: #000; font-size: 9px; font-weight: 700;
+    padding: 2px 7px; border-radius: var(--radius-pill); letter-spacing: .04em; text-transform: uppercase;
+  }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 24px 20px; }
+
+  /* ── SECONDARY SCREENS HEADER ── */
+  .settings-header { display: flex; align-items: center; gap: 14px; padding: 52px 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .back-btn {
+    width: 38px; height: 38px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--card);
+    color: var(--text); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); flex-shrink: 0;
+  }
+  .back-btn:active { transform: scale(.9); background: var(--card-hover); }
+  .settings-title { font-size: 20px; font-weight: 700; letter-spacing: -.5px; }
+  .settings-group { padding: 20px 20px 0; }
+  .group-heading { font-size: 10px; font-weight: 700; color: var(--text-faint); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 10px; padding-left: 2px; }
+  .settings-list { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .setting-row { display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 1px solid var(--border); transition: background var(--transition); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+  .setting-info { flex: 1; min-width: 0; }
+  .setting-name { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -.2px; }
+  .setting-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── UI CONTROLS ── */
+  .toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track { position: absolute; inset: 0; background: #333; border-radius: var(--radius-pill); transition: background .22s ease; cursor: pointer; border: 1px solid #3a3a3a; }
+  .toggle-track::after {
+    content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: #666; transition: transform .22s cubic-bezier(.4,0,.2,1), background .22s ease; box-shadow: 0 1px 4px #00000060;
+  }
+  .toggle input:checked ~ .toggle-track { background: var(--emerald); border-color: var(--emerald); box-shadow: 0 0 8px var(--emerald-glow); }
+  .toggle input:checked ~ .toggle-track::after { transform: translateX(18px); background: #fff; }
+
+  .seg-ctrl { display: flex; gap: 0; background: var(--bg); border-radius: var(--radius); padding: 3px; border: 1px solid var(--border); flex-shrink: 0; }
+  .seg-btn {
+    flex: 1; padding: 7px 10px; border: none; background: transparent; color: var(--text-muted); font-family: 'Sora', sans-serif;
+    font-size: 13px; font-weight: 600; border-radius: calc(var(--radius) - 2px); cursor: pointer; transition: var(--transition); white-space: nowrap; text-align: center;
+  }
+  .seg-btn.active { background: var(--card-hover); color: var(--amber); box-shadow: 0 1px 4px #00000050; }
+  .seg-btn:active { transform: scale(.93); }
+
+  .slider-val { min-width: 22px; font-size: 15px; font-weight: 700; color: var(--amber); text-align: right; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--border); border-radius: 3px; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--amber);
+    border: 3px solid var(--bg); box-shadow: 0 0 8px var(--amber-glow); transition: var(--transition);
+  }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.15); }
+
+  .check-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .check-box {
+    width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); background: var(--bg);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition); flex-shrink: 0;
+  }
+  .check-box.checked { background: var(--emerald); border-color: var(--emerald); box-shadow: 0 0 8px var(--emerald-glow); color: #fff; }
+  .check-box.checked::after { content: '✓'; font-weight: 800; }
+  .mini-select { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'Sora', sans-serif; font-size: 12px; padding: 6px 10px; outline: none; cursor: pointer; flex-shrink: 0; }
+
+  /* ── GAME MODES GRID (For Create Screen) ── */
+  .modes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .mode-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+    position: relative; transition: var(--transition); user-select: none;
+  }
+  .mode-card.active { background: var(--amber-dim); border-color: var(--amber); }
+  .mode-card:active { transform: scale(0.95); }
+  .mode-icon { font-size: 22px; line-height: 1; filter: drop-shadow(0 2px 4px #00000040); }
+  .mode-name { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); text-align: center; }
+  .mode-card.active .mode-name { color: var(--amber); }
+  .mode-check-icon {
+    position: absolute; top: 6px; right: 6px; background: var(--amber); color: #000; width: 14px; height: 14px;
+    font-size: 9px; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0.5); transition: var(--transition);
+  }
+  .mode-card.active .mode-check-icon { opacity: 1; transform: scale(1); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e1e1f;
+    border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 10px 20px; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 999; white-space: nowrap; box-shadow: var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .ambient { position: absolute; top: 0; right: 0; width: 200px; height: 200px; background: radial-gradient(circle, #ffc10706 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+  /* ── ВХОДЯЩЕЕ ПРИГЛАШЕНИЕ (ФИКС ДЛЯ МОБИЛЬНОГО ЭКРАНА) ── */
+.invite-request-overlay {
+  position: absolute; /* Строго внутри .phone */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2500; /* Поверх абсолютно всего внутри игры */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.invite-request-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.invite-request-modal {
+  background: var(--card-bg, #1e1e1f);
+  border: 1px solid var(--border, #2a2a2c);
+  border-radius: 16px;
+  padding: 16px;
+  width: 85%;
+  max-width: 310px; /* Фиксирует ширину внутри рамок телефона */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  transform: scale(0.92);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.invite-request-overlay.show .invite-request-modal {
+  transform: scale(1);
+}
+
+.invite-req-header {
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 12px;
+  color: var(--amber, #ffc107);
+  letter-spacing: -0.3px;
+}
+
+.invite-req-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface, #1a1a1b);
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #2a2a2c);
+  margin-bottom: 14px;
+}
+
+.invite-req-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #252526;
+  border: 2px solid var(--emerald, #2ecc71);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.invite-req-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.invite-req-bet {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg, #121213);
+  padding: 2px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  align-self: flex-start;
+  border: 1px solid var(--border, #2a2a2c);
+}
+
+.invite-req-actions {
+  display: flex;
+  justify-content: flex-end; /* Сдвигает надписи в правый угол */
+  gap: 24px;                 /* Расстояние между Да и Нет */
+  margin-top: 8px;
+  padding-right: 8px;
+}
+
+.invite-req-txt-btn {
+  background: transparent;
+  border: none;
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  padding: 4px 8px;
+}
+
+.invite-req-txt-btn:active {
+  transform: scale(0.9); /* Эффект уменьшения при клике */
+}
+
+.invite-req-txt-btn.decline {
+  color: var(--red, #e74c3c); /* Красный цвет для "Нет" */
+}
+
+.invite-req-txt-btn.accept {
+  color: var(--emerald, #2ecc71); /* Зелёный цвет для "Да" */
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="ambient"></div>
+
+  <div class="screen active" id="screen-menu">
+    <div class="header">
+      <div class="profile">
+        <div class="avatar-wrap"><div class="avatar-placeholder">M</div><div class="online-dot"></div></div>
+        <div class="profile-info"><span class="profile-label" data-i18n="player_label">Игрок</span><span class="profile-name">Mike</span></div>
+      </div>
+      <div class="resources">
+        <div class="pill pill-gold">
+          <span class="pill-icon">🪙</span>
+          <span class="pill-val" id="gold-val">5</span>
+          <button class="pill-add" onclick="claimZeroBonus()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="section-label" data-i18n="menu_label">Меню</div>
+      <div class="grid-2x2">
+        <div class="tile tile-create" onclick="openCreate()">
+          <div class="tile-icon">🎲</div>
+          <div class="tile-label" data-i18n="create_game">Создать игру</div>
+        </div>
+        <div class="tile" onclick="openFriends()">
+          <div class="tile-icon" style="color:#a78bfa">👥</div>
+          <div class="tile-label" data-i18n="friends_online">Игроки в сети</div>
+        </div>
+        <div class="tile" onclick="openSettings()">
+          <div class="tile-icon" style="color:#60a5fa">⚙️</div>
+          <div class="tile-label" data-i18n="settings_title">Настройки</div>
+        </div>
+        <div class="tile" onclick="showToast(tMenu('rules_soon'))">
+          <div class="tile-icon" style="color:#34d399">📖</div>
+          <div class="tile-label" data-i18n="rules_title">Правила</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="text-align:center; padding: 0 20px;"><div style="font-size:11px; color:var(--text-faint); letter-spacing:.06em;">DURAK ONLINE · v1.0</div></div>
+  </div>
+
+  <div class="screen" id="screen-create">
+    <div class="settings-header">
+      <button class="back-btn" onclick="closeCreate()" aria-label="Back">‹</button>
+      <div class="settings-title" data-i18n="create_game">Создать игру</div>
+    </div>
+
+    <div class="settings-group" style="margin-top:20px;">
+      <div class="group-heading" style="text-align:center;" data-i18n="players_count">Игроки</div>
+      <div class="seg-ctrl" id="players-seg">
+        <button class="seg-btn active" onclick="selectSeg(this, 'players')">2</button>
+        <button class="seg-btn" onclick="selectSeg(this, 'players')">3</button>
+        <button class="seg-btn" onclick="selectSeg(this, 'players')">4</button>
+        <button class="seg-btn" onclick="selectSeg(this, 'players')">5</button>
+        <button class="seg-btn" onclick="selectSeg(this, 'players')">6</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:16px; padding: 0 20px; margin-top:20px;">
+      <div style="flex:1;">
+        <div class="group-heading" style="text-align:center;" data-i18n="deck_size">Колода</div>
+        <div class="seg-ctrl" id="deck-seg">
+          <button class="seg-btn active" onclick="selectSeg(this, 'deck')">24</button>
+          <button class="seg-btn" onclick="selectSeg(this, 'deck')">36</button>
+          <button class="seg-btn" onclick="selectSeg(this, 'deck')">52</button>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="group-heading" style="text-align:center;" data-i18n="game_speed">Скорость</div>
+        <div class="seg-ctrl" id="speed-seg">
+          <button class="seg-btn active" onclick="selectSeg(this, 'speed')">▶</button>
+          <button class="seg-btn" onclick="selectSeg(this, 'speed')">▶▶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group" style="margin-top:24px;">
+      <div class="group-heading" style="text-align:center;" data-i18n="game_modes">Режимы игры</div>
+      <div class="modes-grid">
+        <div class="mode-card active" data-group="1" data-val="podkidnoy" onclick="selectMode(this)">
+          <div class="mode-icon">↗️</div><div class="mode-name" data-i18n="mode_podkidnoy">подкидной</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card active" data-group="2" data-val="sosedi" onclick="selectMode(this)">
+          <div class="mode-icon">↔️</div><div class="mode-name" data-i18n="mode_sosedi">соседи</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card" data-group="3" data-val="shulera" onclick="selectMode(this)">
+          <div class="mode-icon">🕵️</div><div class="mode-name" data-i18n="mode_shulera">с шулерами</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card active" data-group="4" data-val="klassika" onclick="selectMode(this)">
+          <div class="mode-icon">🃏</div><div class="mode-name" data-i18n="mode_klassika">классика</div><div class="mode-check-icon">✓</div>
+        </div>
+        
+        <div class="mode-card" data-group="1" data-val="perevodnoy" onclick="selectMode(this)">
+          <div class="mode-icon">🔄</div><div class="mode-name" data-i18n="mode_perevodnoy">переводной</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card" data-group="2" data-val="vse" onclick="selectMode(this)">
+          <div class="mode-icon">🔀</div><div class="mode-name" data-i18n="mode_vse">все</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card active" data-group="3" data-val="chestnaya" onclick="selectMode(this)">
+          <div class="mode-icon">🤝</div><div class="mode-name" data-i18n="mode_chestnaya">честная</div><div class="mode-check-icon">✓</div>
+        </div>
+        <div class="mode-card" data-group="4" data-val="nichya" onclick="selectMode(this)">
+          <div class="mode-icon">🟰</div><div class="mode-name" data-i18n="mode_nichya">ничья</div><div class="mode-check-icon">✓</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 24px 20px 40px; gap: 16px;">
+      <button class="quick-game" style="flex:1; height: 56px; margin: 0;" onclick="goToGame()">
+        <div class="qg-title" data-i18n="start_btn">Создать ▶</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-settings">
+    <div class="settings-header">
+      <button class="back-btn" onclick="closeSettings()" aria-label="Назад">‹</button>
+      <div class="settings-title" data-i18n="settings_title">Настройки</div>
+    </div>
+
+    <div class="section-label" style="margin-top: 20px;" data-i18n="settings_gameplay">Игровой процесс</div>
+
+    <div style="padding: 0 20px; display: flex; flex-direction: column; gap: 12px;">
+      <!-- Сортировка карт -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+        <div>
+          <div style="font-size: 14px; font-weight: 700;" data-i18n="opt_sort_title">Сортировка карт</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" data-i18n="opt_sort_desc">По мастям, козыри справа</div>
+        </div>
+        <button type="button" id="toggle-sort-cards" class="app-toggle-btn active" style="width: 46px; height: 26px; border-radius: 999px; border: none; background: var(--emerald); position: relative; cursor: pointer; transition: background 0.2s;">
+          <span style="position: absolute; top: 3px; left: 23px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 0.2s;"></span>
+        </button>
+      </div>
+
+      <!-- Смайлики в игре -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+        <div>
+          <div style="font-size: 14px; font-weight: 700;" data-i18n="opt_emotes_title">Смайлики в игре</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" data-i18n="opt_emotes_desc">Показывать эмоции за столом</div>
+        </div>
+        <button type="button" id="toggle-emotes" class="app-toggle-btn active" style="width: 46px; height: 26px; border-radius: 999px; border: none; background: var(--emerald); position: relative; cursor: pointer; transition: background 0.2s;">
+          <span style="position: absolute; top: 3px; left: 23px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 0.2s;"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top: 24px;" data-i18n="settings_lang">Язык интерфейса</div>
+
+    <div style="padding: 0 20px;">
+      <div id="lang-seg" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--card); padding: 6px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+        <button type="button" class="seg-btn active" data-lang="ru" style="padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer;">🇷🇺 Русский</button>
+        <button type="button" class="seg-btn" data-lang="en" style="padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer;">🇬🇧 English</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-friends">
+    <div class="settings-header">
+      <button class="back-btn" onclick="closeFriends()" aria-label="Back">‹</button>
+      <div class="settings-title" data-i18n="friends_online">Игроки в сети</div>
+    </div>
+
+    <div class="section-label" style="margin-top: 20px;" data-i18n="connected_hotspot">Подключены к точке доступа</div>
+
+    <div class="friends-list" style="padding: 0 20px; display: flex; flex-direction: column; gap: 12px;">
+    </div>
+  </div>
+
+  <div class="invite-request-overlay" id="profile-edit-overlay">
+    <div class="invite-request-modal" style="max-width: 330px;">
+      <div class="invite-req-header" data-i18n="profile_modal_title">Профиль игрока</div>
+
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:14px;">
+        <div id="edit-avatar-preview" style="width:68px; height:68px; border-radius:50%; background:#252526; border:2px solid var(--amber); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:var(--amber); overflow:hidden;">M</div>
+
+        <label style="background:var(--surface); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; font-size:11px; font-weight:600; cursor:pointer;">
+          <span data-i18n="upload_photo">📷 Загрузить фото</span>
+          <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+        </label>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:6px;" data-i18n="choose_icon">Или выбери иконку</div>
+        <div id="avatar-presets-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px;">
+          <button type="button" class="avatar-preset-btn" data-val="default.png" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--amber); font-weight:800; cursor:pointer;">Aa</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🃏" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🃏</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:😎" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">😎</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🦊" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🦊</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🐺" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🐺</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:👑" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">👑</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🤖" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🤖</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🐱" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🐱</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🦁" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🦁</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🐼" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🐼</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🔥" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🔥</button>
+          <button type="button" class="avatar-preset-btn" data-val="emoji:🎩" style="height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:18px; cursor:pointer;">🎩</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:6px;" data-i18n="nickname_label">Никнейм</div>
+        <input type="text" id="edit-name-input" maxlength="14" placeholder="Введи имя" data-i18n-placeholder="enter_name_ph" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:'Sora',sans-serif; font-size:13px; outline:none;">
+      </div>
+
+      <div class="invite-req-actions">
+        <button type="button" class="invite-req-txt-btn decline" id="profile-cancel-btn" data-i18n="cancel_btn">Отмена</button>
+        <button type="button" class="invite-req-txt-btn accept" id="profile-save-btn" data-i18n="save_btn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+  <div class="invite-request-overlay" id="invite-request-overlay">
+    <div class="invite-request-modal">
+      <div class="invite-req-header" data-i18n="invite_header">Вам бросили вызов!</div>
+      <div class="invite-req-body">
+        <div class="invite-req-avatar" id="invite-req-avatar">?</div>
+        <div class="invite-req-info">
+          <span id="invite-req-name" style="font-weight: 700; color: var(--text);">Игрок</span>
+          <span style="font-size: 11px; color: var(--text-muted);" data-i18n="invite_sub">приглашает вас за стол</span>
+          <div class="invite-req-bet" id="invite-req-info-badge" style="color: var(--amber);" data-i18n="local_match">Локальный матч</div>
+        </div>
+      </div>
+      <div class="invite-req-actions">
+        <button class="invite-req-txt-btn decline" id="invite-decline-btn" data-i18n="no_btn">Нет</button>
+        <button class="invite-req-txt-btn accept" id="invite-accept-btn" data-i18n="yes_btn">Да</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../static/socket.io.min.js"></script>
+<script src="../static/menu.js"></script>
+</body>
+</html>
